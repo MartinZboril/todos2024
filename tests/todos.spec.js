@@ -57,6 +57,15 @@ test.serial("toggle todo", async (t) => {
   t.assert(toggleResponse.text.includes("hotovo"))
 })
 
+test.serial("toggle todo which doesn't exist", async (t) => {
+  const response = await supertest.agent(app)
+    .get("/toggle-todo/X")
+    .redirects(1)
+
+  t.assert(response.status === 404)
+  t.assert(response.text.includes("Todo nebylo nalezeno"))
+})
+
 test.serial("update todo via form", async (t) => {
   const todo = await db("todos").insert({
     title: "Moje todo",
@@ -71,6 +80,18 @@ test.serial("update todo via form", async (t) => {
 
   t.assert(response.text.includes("Nějaký název"))
   t.assert(response.text.includes("high"))
+})
+
+test.serial("update todo which doesn't exist", async (t) => {
+  const response = await supertest
+    .agent(app)
+    .post("/update-todo/X")
+    .type("form")
+    .send({ title: "Nějaký název", priority: "high" })
+    .redirects(1)
+
+  t.assert(response.status === 404)
+  t.assert(response.text.includes("Todo nebylo nalezeno"))
 })
 
 test.serial("delete todo", async (t) => {
@@ -89,6 +110,15 @@ test.serial("delete todo", async (t) => {
   t.assert(! deleteResponse.text.includes("Moje todo"))
 })
 
+test.serial("delete todo which doesn't exist", async (t) => {
+  const response = await supertest.agent(app)
+    .get("/remove-todo/X")
+    .redirects(1)
+
+  t.assert(response.status === 404)
+  t.assert(response.text.includes("Todo nebylo nalezeno"))
+})
+
 test.serial("show todo detail", async (t) => {
   const todo = await db("todos").insert({
     title: "Moje todo",
@@ -99,6 +129,12 @@ test.serial("show todo detail", async (t) => {
   t.assert(response.text.includes("Moje todo"))
 })
 
+test.serial("show todo which doesn't exist", async (t) => {
+  const response = await supertest.agent(app).get(`/todo/X`)
+
+  t.assert(response.status === 404)
+  t.assert(response.text.includes("Todo nebylo nalezeno"))
+})
+
 // TODO: Co se stane když se pokusím založit točko bez názvu?
 // TODO: Co se stane když do URL na detail todočka, zadám ID todočka, které neexistuje
-// TODO: Co když se pokusím smazat todo, které neexistuje

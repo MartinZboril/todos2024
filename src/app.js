@@ -6,6 +6,18 @@ import {
   sendTodoListToAllConnections,
 } from "./websockets.js"
 
+async function checkTodoExists(req, res, next) {
+  const todo = await getTodoById(req.params.id)
+
+  if (!todo) {
+    res.status(404)
+    return res.send("404 - Todo nebylo nalezeno")
+  }
+
+  req.todo = todo
+  next()
+}
+
 export const app = express()
 
 app.set("view engine", "ejs")
@@ -27,7 +39,7 @@ app.get("/", async (req, res) => {
   })
 })
 
-app.get("/todo/:id", async (req, res, next) => {
+app.get("/todo/:id", checkTodoExists, async (req, res, next) => {
   const todo = await getTodoById(req.params.id)
 
   if (!todo) return next()
@@ -48,7 +60,7 @@ app.post("/add-todo", async (req, res) => {
   res.redirect("/")
 })
 
-app.post("/update-todo/:id", async (req, res, next) => {
+app.post("/update-todo/:id", checkTodoExists, async (req, res, next) => {
   const todo = await getTodoById(req.params.id)
 
   if (!todo) return next()
@@ -71,7 +83,7 @@ app.post("/update-todo/:id", async (req, res, next) => {
   res.redirect("back")
 })
 
-app.get("/remove-todo/:id", async (req, res) => {
+app.get("/remove-todo/:id", checkTodoExists, async (req, res) => {
   const todo = await getTodoById(req.params.id)
 
   if (!todo) return next()
@@ -84,7 +96,7 @@ app.get("/remove-todo/:id", async (req, res) => {
   res.redirect("/")
 })
 
-app.get("/toggle-todo/:id", async (req, res, next) => {
+app.get("/toggle-todo/:id", checkTodoExists, async (req, res, next) => {
   const todo = await getTodoById(req.params.id)
 
   if (!todo) return next()
