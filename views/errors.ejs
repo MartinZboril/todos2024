@@ -1,0 +1,7 @@
+<% if (messages.error && messages.error.length) { %>
+    <% messages.error.forEach(function(message) { %>
+        <div class="alert alert-danger">
+            <%= message %>
+        </div>
+    <% }); %>
+<% } %>

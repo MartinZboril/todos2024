@@ -136,5 +136,45 @@ test.serial("show todo which doesn't exist", async (t) => {
   t.assert(response.text.includes("Todo nebylo nalezeno"))
 })
 
-// TODO: Co se stane když se pokusím založit točko bez názvu?
-// TODO: Co se stane když do URL na detail todočka, zadám ID todočka, které neexistuje
+test.serial("create new todo via form without a title", async (t) => {
+  const response = await supertest
+    .agent(app)
+    .post("/add-todo")
+    .type("form")
+    .send({ title: "" })
+    .redirects(1)
+
+  t.assert(response.text.includes("Todo musí mít vyplněný název"))
+})
+
+test.serial("update todo via form without a title", async (t) => {
+  const todo = await db("todos").insert({
+    title: "Moje todo",
+  })
+
+  const response = await supertest
+    .agent(app)
+    .post(`/update-todo/${todo}`)
+    .type("form")
+    .send({ priority: "high" })
+    .redirects(1)
+
+  t.assert(response.text.includes("Todo musí mít vyplněný název"))
+})
+
+test.serial("update todo via form without a priority", async (t) => {
+  const todo = await db("todos").insert({
+    title: "Moje todo",
+  })
+
+  const response = await supertest
+    .agent(app)
+    .post(`/update-todo/${todo}`)
+    .type("form")
+    .send({ title: "Moje todo" })
+    .redirects(1)
+
+  t.assert(response.text.includes("Todo musí mít přiřazenou prioritu"))
+})
+
+// TODO: check if updated todo has priority in allowed value
